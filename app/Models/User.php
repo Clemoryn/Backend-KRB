@@ -2,63 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; // penting buat login
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    // Nama tabel custom
-    protected $table = 'user';
-
-    // Primary key custom
-    protected $primaryKey = 'user_id';
-
-    // Auto increment PK int
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // Timestamps aktif (karena ada created_at & updated_at)
-    public $timestamps = true;
-
-    // Kolom yang boleh diisi mass assignment
     protected $fillable = [
-        'full_name',
-        'email',
-        'phone_number',
-        'password',
-        'company_id',
-        'departement_id',
+        'company_id','department_id','role_id','full_name','email','phone_number','password'
     ];
 
-    // Sembunyikan kolom sensitif
-    protected $hidden = [
-        'password',
-        'remember_token', // kalau nanti kamu tambahin remember_token
-    ];
+    protected $hidden = ['password','remember_token'];
 
-    // Casting
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public function company(): BelongsTo { return $this->belongsTo(Company::class); }
+    public function department(): BelongsTo { return $this->belongsTo(Department::class); }
+    public function role(): BelongsTo { return $this->belongsTo(Role::class); }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    // Tickets yang dibuat user (requester)
+    public function requestedTickets(): HasMany { return $this->hasMany(Ticket::class, 'requester_id'); }
 
-    // User milik 1 company
-    public function company()
-    {
-        return $this->belongsTo(Company::class, 'company_id', 'company_id');
-    }
+    // Komentar/attachment/riwayat yang dibuat user
+    public function ticketComments(): HasMany { return $this->hasMany(TicketComment::class); }
+    public function ticketAttachments(): HasMany { return $this->hasMany(TicketAttachment::class, 'uploaded_by'); }
+    public function ticketHistoriesChanged(): HasMany { return $this->hasMany(TicketHistory::class, 'changed_by'); }
 
-    // User milik 1 departement
-    public function departement()
-    {
-        return $this->belongsTo(Departement::class, 'departement_id', 'departement_id');
-    }
+    // Penugasan sebagai agent
+    public function ticketAssignments(): HasMany { return $this->hasMany(TicketAssignment::class, 'agent_id'); }
 }

@@ -2,44 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sla extends Model
 {
-    use HasFactory;
+    protected $table = 'slas';
+    protected $fillable = ['company_id','department_id','active'];
 
-    // Nama tabel custom
-    protected $table = 'sla';
+    protected $casts = ['active' => 'boolean'];
 
-    // Primary key custom
-    protected $primaryKey = 'sla';
-
-    public $incrementing = true;   // auto increment
-    protected $keyType = 'int';    // tipe int
-
-    // Timestamps aktif (karena ada created_at & updated_at)
-    public $timestamps = true;
-
-    // Kolom yang bisa di-mass assign
-    protected $fillable = [
-        'response_time',
-        'active',
-    ];
-
-    // Casting
-    protected $casts = [
-        'active' => 'boolean',
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships (opsional, nanti bisa dihubungin)
-    |--------------------------------------------------------------------------
-    */
-    // Misal: SLA dipakai oleh banyak Ticket
-    // public function tickets()
-    // {
-    //     return $this->hasMany(Ticket::class, 'sla', 'sla');
-    // }
+    public function company(): BelongsTo { return $this->belongsTo(Company::class); }
+    public function department(): BelongsTo { return $this->belongsTo(Department::class); }
 }

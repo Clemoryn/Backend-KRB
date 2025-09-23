@@ -2,44 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TicketAttachment extends Model
 {
-    use HasFactory;
+    public $timestamps = false; // created_at only (from migration)
+    protected $fillable = ['ticket_id','file_url','file_type','uploaded_by','created_at'];
 
-    // Tabel & PK custom
-    protected $table = 'ticket_attachment';
-    protected $primaryKey = 'attachment_id';
+    protected $casts = ['created_at' => 'datetime'];
 
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    public $timestamps = true;
-
-    protected $fillable = [
-        'file_type',
-        'file_url',
-        'user_id',
-        'ticket_id',
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    // attachment milik satu user (uploader)
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
-
-    // attachment terkait ke satu tiket
-    public function ticket()
-    {
-        return $this->belongsTo(Ticket::class, 'ticket_id', 'ticket_id');
-    }
+    public function ticket(): BelongsTo { return $this->belongsTo(Ticket::class); }
+    public function uploader(): BelongsTo { return $this->belongsTo(User::class, 'uploaded_by'); }
 }

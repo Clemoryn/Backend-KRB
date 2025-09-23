@@ -2,77 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ticket extends Model
 {
-    use HasFactory;
-
-    // Nama tabel & primary key custom
-    protected $table = 'ticket';
-    protected $primaryKey = 'ticket_id';
-
-    // PK auto-increment int
-    public $incrementing = true;
-    protected $keyType = 'int';
-
-    // created_at & updated_at ada di migration
-    public $timestamps = true;
-
-    // Kolom yang bisa di-mass-assign
     protected $fillable = [
-        'subject',
-        'description',
-        'status',      // PENDING | PROCESS | COMPLETE
-        'priority',    // LOW | MEDIUM | HIGH | CRITICAL
-        'company_id',
-        'departement_id',
-        'user_id',
+        'company_id','department_id','requester_id','subject','description','priority','status'
     ];
 
-    // Casting tipis
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'status'     => 'string',
-        'priority'   => 'string',
-    ];
+    public const PRIORITY = ['LOW','MEDIUM','HIGH','CRITICAL'];
+    public const STATUS   = ['OPEN','IN_PROGRESS','RESOLVED','CLOSED'];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    public function company(): BelongsTo { return $this->belongsTo(Company::class); }
+    public function department(): BelongsTo { return $this->belongsTo(Department::class); }
+    public function requester(): BelongsTo { return $this->belongsTo(User::class, 'requester_id'); }
 
-    public function company()
-    {
-        return $this->belongsTo(Company::class, 'company_id', 'company_id');
-    }
-
-    public function departement()
-    {
-        return $this->belongsTo(Departement::class, 'departement_id', 'departement_id');
-    }
-
-    // requester / pembuat tiket
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id', 'user_id');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Scopes kecil biar enak filter
-    |--------------------------------------------------------------------------
-    */
-    public function scopeStatus($q, string $status)
-    {
-        return $q->where('status', strtoupper($status));
-    }
-
-    public function scopePriority($q, string $priority)
-    {
-        return $q->where('priority', strtoupper($priority));
-    }
+    public function histories(): HasMany { return $this->hasMany(TicketHistory::class); }
+    public function comments(): HasMany { return $this->hasMany(TicketComment::class); }
+    public function attachments(): HasMany { return $this->hasMany(TicketAttachment::class); }
+    public function assignments(): HasMany { return $this->hasMany(TicketAssignment::class); }
 }
